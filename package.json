@@ -1,0 +1,24 @@
+{
+  "name": "line-debugging",
+  "version": "1.0.0",
+  "description": "A tool to add console.log statements with line numbers and file names to JavaScript files for debugging purposes",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "line-debugger.js",
+  "bin": {
+    "line-debugger": "./line-debugger.js"
+  },
+  "scripts": {
+    "debug": "node line-debugger.js",
+    "debug-examples": "node line-debugger.js examples/",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "debugging",
+    "console.log",
+    "javascript",
+    "line-numbers",
+    "development-tools"
+  ]
+}
