@@ -6,7 +6,7 @@ A Node.js tool that adds `console.log` statements with line numbers and file nam
 
 - 🎯 **Precise Line Tracking**: Adds console.log statements showing exact line numbers and file names
 - 📁 **Batch Processing**: Process entire directories or individual files
-- 🛡️ **Safe by Default**: Creates `.debug` versions of files, preserving originals
+- 🛡️ **Safe by Default**: Can create versioned copies of files, preserving originals
 - 🎨 **Customizable**: Configure output format, prefixes, and behavior
 - 🚫 **Smart Filtering**: Skips comments, imports, exports, and other non-executable lines
 - ⚡ **Fast**: Efficiently processes large codebases
@@ -50,8 +50,8 @@ npm run debug -- examples/app.js
 | Option | Description | Default |
 |--------|-------------|---------|
 | `--help`, `-h` | Show help message | - |
-| `--no-preserve` | Overwrite original files instead of creating .debug versions | false |
-| `--suffix <suffix>` | Custom suffix for output files | `.debug` |
+| `--no-preserve` | Overwrite original files instead of creating versioned copies | false |
+| `--suffix <suffix>` | Custom suffix for output files | none |
 | `--include-empty` | Include console.log for empty lines | false |
 | `--prefix <prefix>` | Custom prefix for log messages | `DEBUG` |
 
@@ -125,18 +125,18 @@ When you run the script on the example files:
 $ npm run debug-examples
 
 Found 3 JavaScript files in examples/
-✅ Processed: examples/app.js → examples/app.debug.js
-✅ Processed: examples/calculator.js → examples/calculator.debug.js
-✅ Processed: examples/utils.js → examples/utils.debug.js
+✅ Processed: examples/app.js → examples/app_processed.js
+✅ Processed: examples/calculator.js → examples/calculator_processed.js
+✅ Processed: examples/utils.js → examples/utils_processed.js
 
 📊 Processing Summary:
 ✅ Successfully processed: 3 files
 ❌ Failed to process: 0 files
 
 📝 Output files:
-   examples/app.debug.js
-   examples/calculator.debug.js
-   examples/utils.debug.js
+   examples/app_processed.js
+   examples/calculator_processed.js
+   examples/utils_processed.js
 ```
 
 ## Use Cases
@@ -170,7 +170,7 @@ When using as a module, you can pass these options:
 
 ```javascript
 const options = {
-  outputSuffix: '.debug',        // Suffix for output files
+  outputSuffix: '',        // Suffix for output files
   preserveOriginal: true,        // Keep original files
   excludePatterns: [            // Patterns to exclude
     'node_modules',

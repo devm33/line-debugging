@@ -6,7 +6,7 @@ const path = require('path');
 class LineDebugger {
   constructor(options = {}) {
     this.options = {
-      outputSuffix: options.outputSuffix || '.debug',
+      outputSuffix: options.outputSuffix || '',
       preserveOriginal: options.preserveOriginal !== false,
       excludePatterns: options.excludePatterns || [
         'node_modules',
@@ -246,8 +246,8 @@ Usage: node line-debugger.js [options] <files-or-directories>
 
 Options:
   --help, -h           Show this help message
-  --no-preserve        Overwrite original files instead of creating .debug versions
-  --suffix <suffix>    Custom suffix for output files (default: .debug)
+  --no-preserve        Overwrite original files instead of creating versioned files
+  --suffix <suffix>    Custom suffix for output files (default: none)
   --include-empty      Include console.log for empty lines
   --prefix <prefix>    Custom prefix for log messages (default: DEBUG)
 
