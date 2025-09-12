@@ -66,7 +66,7 @@ class LineDebugger {
    */
   isJavaScriptFile(filePath) {
     const ext = path.extname(filePath).toLowerCase();
-    return ['.js', '.mjs', '.jsx'].includes(ext);
+    return ['.js', '.mjs', '.jsx', '.ts', '.tsx'].includes(ext);
   }
 
   /**
