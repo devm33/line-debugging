@@ -6,9 +6,11 @@ A Node.js tool that adds `console.log` statements with line numbers and file nam
 
 - 🎯 **Precise Line Tracking**: Adds console.log statements showing exact line numbers and file names
 - 📁 **Batch Processing**: Process entire directories or individual files
+- 🔄 **Recursive Processing**: Automatically processes all subdirectories and nested folder structures
 - 🛡️ **Safe by Default**: Can create versioned copies of files, preserving originals
 - 🎨 **Customizable**: Configure output format, prefixes, and behavior
 - 🚫 **Smart Filtering**: Skips comments, imports, exports, and other non-executable lines
+- 📍 **Full Path Context**: Shows complete relative paths in debug statements for easy identification
 - ⚡ **Fast**: Efficiently processes large codebases
 
 ## Installation
@@ -76,6 +78,52 @@ node line-debugger.js --force already-processed.js
 
 # Force reprocess entire directory (cleans and re-adds debug statements)
 node line-debugger.js --force --no-preserve src/
+
+# Process deeply nested directory structures (recursive)
+node line-debugger.js src/components/ui/buttons/
+# Output: Processes all JS files in the entire directory tree
+```
+
+## Recursive Processing
+
+The tool automatically processes all subdirectories recursively. When you point it at a directory, it will:
+
+1. **Scan all subdirectories**: Finds JavaScript files at any depth
+2. **Show full paths**: Debug statements include complete relative paths for context
+3. **Preserve structure**: Maintains the original directory hierarchy
+
+**Example directory structure:**
+```
+src/
+├── app.js
+├── components/
+│   ├── Header.js
+│   └── ui/
+│       ├── Button.js
+│       └── forms/
+│           └── Input.js
+└── utils/
+    └── helpers.js
+```
+
+**Command:**
+```bash
+node line-debugger.js src/
+# Found 5 JavaScript files in src/
+# ✅ Processed: src/app.js
+# ✅ Processed: src/components/Header.js  
+# ✅ Processed: src/components/ui/Button.js
+# ✅ Processed: src/components/ui/forms/Input.js
+# ✅ Processed: src/utils/helpers.js
+```
+
+**Result in nested files:**
+```javascript
+// src/components/ui/forms/Input.js
+function validateInput(value) {
+  console.log('DEBUG: src/components/ui/forms/Input.js:2');
+  return value.trim().length > 0;
+}
 ```
 
 ## How It Works
@@ -93,11 +141,11 @@ function calculateSum(a, b) {
 **After:**
 ```javascript
 function calculateSum(a, b) {
-  console.log('DEBUG: calculator.js:1');
+  console.log('DEBUG: examples/calculator.js:1');
   const result = a + b;
-  console.log('DEBUG: calculator.js:2');
+  console.log('DEBUG: examples/calculator.js:2');
   return result;
-  console.log('DEBUG: calculator.js:3');
+  console.log('DEBUG: examples/calculator.js:3');
 }
 ```
 

@@ -147,7 +147,8 @@ class LineDebugger {
     try {
       const content = fs.readFileSync(filePath, 'utf8');
       let lines = content.split('\n');
-      const fileName = path.basename(filePath);
+      // Use relative path from current working directory for better context
+      const fileName = path.relative(process.cwd(), filePath);
       
       // Check if file already has debug statements to avoid recursive processing
       // Look for any debug statements with our prefix, not just ones with current filename
