@@ -54,6 +54,7 @@ npm run debug -- examples/app.js
 | `--suffix <suffix>` | Custom suffix for output files | none |
 | `--include-empty` | Include console.log for empty lines | false |
 | `--prefix <prefix>` | Custom prefix for log messages | `DEBUG` |
+| `--force` | Force reprocessing of files that already contain debug statements | false |
 
 ### Examples
 
@@ -69,6 +70,12 @@ node line-debugger.js --include-empty --prefix TRACE app.js
 
 # Combine multiple options
 node line-debugger.js --no-preserve --prefix LINE examples/
+
+# Force reprocess files that already contain debug statements
+node line-debugger.js --force already-processed.js
+
+# Force reprocess entire directory (cleans and re-adds debug statements)
+node line-debugger.js --force --no-preserve src/
 ```
 
 ## How It Works
@@ -103,6 +110,27 @@ The tool automatically skips these types of lines to avoid cluttering:
 - Empty lines (unless `--include-empty` is used)
 - Opening/closing braces (to avoid excessive logging)
 - JSDoc comments
+
+## Recursive Processing Prevention
+
+The tool intelligently prevents recursive processing by:
+- **Detecting existing debug statements**: Automatically skips files that already contain debug statements with the same prefix
+- **Providing clear feedback**: Shows which files are skipped and why
+- **Force reprocessing option**: Use `--force` to clean existing debug statements and reprocess files
+- **Smart cleanup**: When using `--force`, removes existing debug statements before adding new ones
+
+```bash
+# First run - processes the file
+node line-debugger.js app.js
+
+# Second run - automatically skips (prevents duplicates)
+node line-debugger.js app.js
+# Output: ⚠️ Skipping app.js - already contains debug statements (use --force to reprocess)
+
+# Force reprocessing - cleans old statements and adds fresh ones
+node line-debugger.js --force app.js
+# Output: 🔄 Removing existing debug statements from app.js
+```
 
 ## File Structure
 
@@ -180,7 +208,8 @@ const options = {
     '*.min.js'
   ],
   includeEmptyLines: false,     // Process empty lines
-  logPrefix: 'DEBUG'            // Prefix for log messages
+  logPrefix: 'DEBUG',           // Prefix for log messages
+  forceReprocess: false         // Force reprocessing of files with existing debug statements
 };
 ```
 

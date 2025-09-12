@@ -16,7 +16,8 @@ class LineDebugger {
         '*.min.js'
       ],
       includeEmptyLines: options.includeEmptyLines || false,
-      logPrefix: options.logPrefix || 'DEBUG'
+      logPrefix: options.logPrefix || 'DEBUG',
+      forceReprocess: options.forceReprocess || false
     };
   }
 
@@ -131,13 +132,42 @@ class LineDebugger {
   }
 
   /**
+   * Remove existing debug statements from file content
+   */
+  removeExistingDebugStatements(lines, fileName) {
+    // Remove any debug statements with our prefix pattern, regardless of filename
+    const debugPattern = new RegExp(`^\\s*console\\.log\\('${this.options.logPrefix}:\\s*[^']*:\\d+'\\);\\s*$`);
+    return lines.filter(line => !debugPattern.test(line));
+  }
+
+  /**
    * Process a single JavaScript file
    */
   processFile(filePath) {
     try {
       const content = fs.readFileSync(filePath, 'utf8');
-      const lines = content.split('\n');
+      let lines = content.split('\n');
       const fileName = path.basename(filePath);
+      
+      // Check if file already has debug statements to avoid recursive processing
+      // Look for any debug statements with our prefix, not just ones with current filename
+      const hasExistingDebugStatements = lines.some(line => {
+        const trimmedLine = line.trim();
+        return trimmedLine.startsWith(`console.log('${this.options.logPrefix}:`) && 
+               trimmedLine.includes(`:`) && 
+               trimmedLine.endsWith(`');`);
+      });
+      
+      if (hasExistingDebugStatements && !this.options.forceReprocess) {
+        console.log(`⚠️  Skipping ${filePath} - already contains debug statements (use --force to reprocess)`);
+        return { success: true, inputPath: filePath, outputPath: filePath, skipped: true };
+      }
+
+      // If forcing reprocess, remove existing debug statements first
+      if (hasExistingDebugStatements && this.options.forceReprocess) {
+        lines = this.removeExistingDebugStatements(lines, fileName);
+        console.log(`🔄 Removing existing debug statements from ${filePath}`);
+      }
       
       const processedLines = lines.map((line, index) => {
         const lineNumber = index + 1;
@@ -209,11 +239,16 @@ class LineDebugger {
    * Generate summary of processing results
    */
   generateSummary(results) {
-    const successful = results.filter(r => r.success);
+    const successful = results.filter(r => r.success && !r.skipped);
+    const skipped = results.filter(r => r.success && r.skipped);
     const failed = results.filter(r => !r.success);
 
     console.log('\n📊 Processing Summary:');
     console.log(`✅ Successfully processed: ${successful.length} files`);
+    
+    if (skipped.length > 0) {
+      console.log(`⚠️  Skipped (already processed): ${skipped.length} files`);
+    }
     
     if (failed.length > 0) {
       console.log(`❌ Failed to process: ${failed.length} files`);
@@ -226,6 +261,13 @@ class LineDebugger {
       console.log('\n📝 Output files:');
       successful.forEach(result => {
         console.log(`   ${result.outputPath}`);
+      });
+    }
+
+    if (skipped.length > 0) {
+      console.log('\n⏭️  Skipped files (already contain debug statements):');
+      skipped.forEach(result => {
+        console.log(`   ${result.inputPath}`);
       });
     }
   }
@@ -250,12 +292,14 @@ Options:
   --suffix <suffix>    Custom suffix for output files (default: none)
   --include-empty      Include console.log for empty lines
   --prefix <prefix>    Custom prefix for log messages (default: DEBUG)
+  --force              Force reprocessing of files that already contain debug statements
 
 Examples:
   node line-debugger.js src/
   node line-debugger.js file1.js file2.js
   node line-debugger.js --no-preserve --suffix .logged src/
   node line-debugger.js --include-empty --prefix TRACE app.js
+  node line-debugger.js --force already-processed-file.js
     `);
     process.exit(0);
   }
@@ -284,6 +328,9 @@ Examples:
         break;
       case '--prefix':
         options.logPrefix = args[++i];
+        break;
+      case '--force':
+        options.forceReprocess = true;
         break;
       default:
         if (!arg.startsWith('--')) {
