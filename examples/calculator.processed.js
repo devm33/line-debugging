@@ -1,121 +1,69 @@
 // Sample calculator module
-console.log('DEBUG: calculator.js:2');
-console.log('DEBUG: calculator.js:3');
-console.log('DEBUG: calculator.processed.js:4');
+console.log('DEBUG: examples/calculator.processed.js:2');
 class Calculator {
-  console.log('DEBUG: calculator.js:3');
-  console.log('DEBUG: calculator.js:5');
-  console.log('DEBUG: calculator.processed.js:7');
+  console.log('DEBUG: examples/calculator.processed.js:3');
   constructor() {
-    console.log('DEBUG: calculator.js:4');
-    console.log('DEBUG: calculator.js:7');
-    console.log('DEBUG: calculator.processed.js:10');
+    console.log('DEBUG: examples/calculator.processed.js:4');
     this.result = 0;
   }
 
-  console.log('DEBUG: calculator.js:7');
-  console.log('DEBUG: calculator.js:11');
-  console.log('DEBUG: calculator.processed.js:15');
+  console.log('DEBUG: examples/calculator.processed.js:7');
   add(a, b) {
-    console.log('DEBUG: calculator.js:8');
-    console.log('DEBUG: calculator.js:13');
-    console.log('DEBUG: calculator.processed.js:18');
+    console.log('DEBUG: examples/calculator.processed.js:8');
     const sum = a + b;
-    console.log('DEBUG: calculator.js:9');
-    console.log('DEBUG: calculator.js:15');
-    console.log('DEBUG: calculator.processed.js:21');
+    console.log('DEBUG: examples/calculator.processed.js:9');
     this.result = sum;
-    console.log('DEBUG: calculator.js:10');
-    console.log('DEBUG: calculator.js:17');
-    console.log('DEBUG: calculator.processed.js:24');
+    console.log('DEBUG: examples/calculator.processed.js:10');
     return sum;
   }
 
-  console.log('DEBUG: calculator.js:13');
-  console.log('DEBUG: calculator.js:21');
-  console.log('DEBUG: calculator.processed.js:29');
+  console.log('DEBUG: examples/calculator.processed.js:13');
   subtract(a, b) {
-    console.log('DEBUG: calculator.js:14');
-    console.log('DEBUG: calculator.js:23');
-    console.log('DEBUG: calculator.processed.js:32');
+    console.log('DEBUG: examples/calculator.processed.js:14');
     const difference = a - b;
-    console.log('DEBUG: calculator.js:15');
-    console.log('DEBUG: calculator.js:25');
-    console.log('DEBUG: calculator.processed.js:35');
+    console.log('DEBUG: examples/calculator.processed.js:15');
     this.result = difference;
-    console.log('DEBUG: calculator.js:16');
-    console.log('DEBUG: calculator.js:27');
-    console.log('DEBUG: calculator.processed.js:38');
+    console.log('DEBUG: examples/calculator.processed.js:16');
     return difference;
   }
 
-  console.log('DEBUG: calculator.js:19');
-  console.log('DEBUG: calculator.js:31');
-  console.log('DEBUG: calculator.processed.js:43');
+  console.log('DEBUG: examples/calculator.processed.js:19');
   multiply(a, b) {
-    console.log('DEBUG: calculator.js:20');
-    console.log('DEBUG: calculator.js:33');
-    console.log('DEBUG: calculator.processed.js:46');
+    console.log('DEBUG: examples/calculator.processed.js:20');
     const product = a * b;
-    console.log('DEBUG: calculator.js:21');
-    console.log('DEBUG: calculator.js:35');
-    console.log('DEBUG: calculator.processed.js:49');
+    console.log('DEBUG: examples/calculator.processed.js:21');
     this.result = product;
-    console.log('DEBUG: calculator.js:22');
-    console.log('DEBUG: calculator.js:37');
-    console.log('DEBUG: calculator.processed.js:52');
+    console.log('DEBUG: examples/calculator.processed.js:22');
     return product;
   }
 
-  console.log('DEBUG: calculator.js:25');
-  console.log('DEBUG: calculator.js:41');
-  console.log('DEBUG: calculator.processed.js:57');
+  console.log('DEBUG: examples/calculator.processed.js:25');
   divide(a, b) {
-    console.log('DEBUG: calculator.js:26');
-    console.log('DEBUG: calculator.js:43');
-    console.log('DEBUG: calculator.processed.js:60');
+    console.log('DEBUG: examples/calculator.processed.js:26');
     if (b === 0) {
-      console.log('DEBUG: calculator.js:27');
-      console.log('DEBUG: calculator.js:45');
-      console.log('DEBUG: calculator.processed.js:63');
+      console.log('DEBUG: examples/calculator.processed.js:27');
       throw new Error('Division by zero');
     }
-    console.log('DEBUG: calculator.js:29');
-    console.log('DEBUG: calculator.js:48');
-    console.log('DEBUG: calculator.processed.js:67');
+    console.log('DEBUG: examples/calculator.processed.js:29');
     const quotient = a / b;
-    console.log('DEBUG: calculator.js:30');
-    console.log('DEBUG: calculator.js:50');
-    console.log('DEBUG: calculator.processed.js:70');
+    console.log('DEBUG: examples/calculator.processed.js:30');
     this.result = quotient;
-    console.log('DEBUG: calculator.js:31');
-    console.log('DEBUG: calculator.js:52');
-    console.log('DEBUG: calculator.processed.js:73');
+    console.log('DEBUG: examples/calculator.processed.js:31');
     return quotient;
   }
 
-  console.log('DEBUG: calculator.js:34');
-  console.log('DEBUG: calculator.js:56');
-  console.log('DEBUG: calculator.processed.js:78');
+  console.log('DEBUG: examples/calculator.processed.js:34');
   getResult() {
-    console.log('DEBUG: calculator.js:35');
-    console.log('DEBUG: calculator.js:58');
-    console.log('DEBUG: calculator.processed.js:81');
+    console.log('DEBUG: examples/calculator.processed.js:35');
     return this.result;
   }
 
-  console.log('DEBUG: calculator.js:38');
-  console.log('DEBUG: calculator.js:62');
-  console.log('DEBUG: calculator.processed.js:86');
+  console.log('DEBUG: examples/calculator.processed.js:38');
   reset() {
-    console.log('DEBUG: calculator.js:39');
-    console.log('DEBUG: calculator.js:64');
-    console.log('DEBUG: calculator.processed.js:89');
+    console.log('DEBUG: examples/calculator.processed.js:39');
     this.result = 0;
   }
 }
 
-console.log('DEBUG: calculator.js:43');
-console.log('DEBUG: calculator.js:69');
-console.log('DEBUG: calculator.processed.js:95');
+console.log('DEBUG: examples/calculator.processed.js:43');
 module.exports = Calculator;
