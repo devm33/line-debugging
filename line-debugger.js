@@ -72,7 +72,7 @@ class LineDebugger {
   /**
    * Add console.log statements to a single line
    */
-  processLine(line, lineNumber, fileName, isEmptyLine = false) {
+  processLine(line, lineNumber, fileName, isEmptyLine = false, context = null) {
     if (isEmptyLine && !this.options.includeEmptyLines) {
       return line;
     }
@@ -88,6 +88,19 @@ class LineDebugger {
     // Skip certain types of lines
     if (this.shouldSkipLine(trimmedLine)) {
       return line;
+    }
+
+    // If we have context information, use it to determine if insertion is safe
+    if (context) {
+      // Don't insert debug statements inside expressions (objects, arrays, function calls)
+      if (context.insideExpression) {
+        return line;
+      }
+      
+      // Only insert at the beginning of statements for better safety
+      if (!context.isStatementStart && !isEmptyLine && trimmedLine !== '') {
+        return line;
+      }
     }
 
     const debugStatement = `console.log('${this.options.logPrefix}: ${fileName}:${lineNumber}');`;
@@ -141,6 +154,154 @@ class LineDebugger {
   }
 
   /**
+   * Analyze code context to determine safe insertion points
+   */
+  analyzeCodeContext(lines) {
+    const contextInfo = [];
+    let bracketStack = [];
+    let inString = false;
+    let stringChar = '';
+    let inComment = false;
+    let inMultiLineComment = false;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const trimmedLine = line.trim();
+      
+      // Initialize context for this line
+      const lineContext = {
+        insideExpression: false,
+        insideObject: false,
+        insideArray: false,
+        insideFunction: false,
+        depth: bracketStack.length,
+        isStatementStart: false
+      };
+
+      // Skip processing if we're in a comment
+      if (inMultiLineComment) {
+        if (line.includes('*/')) {
+          inMultiLineComment = false;
+        }
+        lineContext.insideExpression = true; // Don't insert in comments
+        contextInfo.push(lineContext);
+        continue;
+      }
+
+      if (trimmedLine.startsWith('/*')) {
+        inMultiLineComment = true;
+        lineContext.insideExpression = true;
+        contextInfo.push(lineContext);
+        continue;
+      }
+
+      // Parse character by character to track context
+      for (let j = 0; j < line.length; j++) {
+        const char = line[j];
+        const prevChar = j > 0 ? line[j - 1] : '';
+        const nextChar = j < line.length - 1 ? line[j + 1] : '';
+
+        // Handle string literals
+        if (!inString && (char === '"' || char === "'" || char === '`')) {
+          inString = true;
+          stringChar = char;
+        } else if (inString && char === stringChar && prevChar !== '\\') {
+          inString = false;
+          stringChar = '';
+        }
+
+        // Skip bracket tracking inside strings
+        if (inString) continue;
+
+        // Handle single-line comments
+        if (char === '/' && nextChar === '/') {
+          break; // Rest of line is comment
+        }
+
+        // Track brackets and context
+        if (char === '{') {
+          bracketStack.push({ type: 'object', line: i });
+        } else if (char === '[') {
+          bracketStack.push({ type: 'array', line: i });
+        } else if (char === '(') {
+          bracketStack.push({ type: 'paren', line: i });
+        } else if (char === '}' || char === ']' || char === ')') {
+          if (bracketStack.length > 0) {
+            bracketStack.pop();
+          }
+        }
+      }
+
+      // Determine if we're inside an expression context
+      if (bracketStack.length > 0) {
+        const topContext = bracketStack[bracketStack.length - 1];
+        lineContext.insideExpression = true;
+        lineContext.insideObject = topContext.type === 'object';
+        lineContext.insideArray = topContext.type === 'array';
+        lineContext.insideFunction = topContext.type === 'paren';
+      }
+
+      // Check if this line appears to start a new statement
+      lineContext.isStatementStart = this.isLineStatementStart(trimmedLine, lineContext);
+
+      contextInfo.push(lineContext);
+    }
+
+    return contextInfo;
+  }
+
+  /**
+   * Determine if a line starts a new statement (safe for debug insertion)
+   */
+  isLineStatementStart(trimmedLine, context) {
+    if (!trimmedLine || context.insideExpression) {
+      return false;
+    }
+
+    // Skip obviously non-statement lines
+    if (trimmedLine.startsWith('//') || 
+        trimmedLine.startsWith('*') || 
+        trimmedLine.startsWith('*/') ||
+        trimmedLine === '{' ||
+        trimmedLine === '}' ||
+        trimmedLine === '},' ||
+        trimmedLine === ']' ||
+        trimmedLine === '];' ||
+        trimmedLine === ')' ||
+        trimmedLine === ');') {
+      return false;
+    }
+
+    // Patterns that typically start statements
+    const statementStarters = [
+      /^(const|let|var)\s/,      // Variable declarations
+      /^function\*?\s+[a-zA-Z_$][a-zA-Z0-9_$]*\s*\(/, // Function declarations (including generators)
+      /^async\s+function\*?\s+[a-zA-Z_$][a-zA-Z0-9_$]*\s*\(/, // Async function declarations
+      /^(if|for|while|do|switch|try|catch|finally)\s*\(/, // Control structures
+      /^(class)\s/,              // Class declarations
+      /^return(\s|$)/,           // Return statements
+      /^throw\s/,                // Throw statements
+      /^break\s*;?$/,            // Break statements
+      /^continue\s*;?$/,         // Continue statements
+      /^yield(\s|$)/,            // Yield statements
+      /^await\s/,                // Await statements
+      /^import\s/,               // Import statements
+      /^export\s/,               // Export statements
+      /^[a-zA-Z_$][a-zA-Z0-9_$]*\s*\(/,  // Function calls
+      /^[a-zA-Z_$][a-zA-Z0-9_$]*\s*=/,   // Simple assignments
+      /^[a-zA-Z_$][a-zA-Z0-9_$.[\]]*\s*[+\-*/]=/, // Compound assignments
+      /^[a-zA-Z_$][a-zA-Z0-9_$.[\]]*\+\+/, // Increment
+      /^[a-zA-Z_$][a-zA-Z0-9_$.[\]]*--/, // Decrement
+      /^\+\+[a-zA-Z_$]/,         // Pre-increment
+      /^--[a-zA-Z_$]/,           // Pre-decrement
+      /^delete\s/,               // Delete statements
+      /^typeof\s/,               // Typeof expressions (when used as statements)
+    ];
+
+    return statementStarters.some(pattern => pattern.test(trimmedLine));
+  }
+
+  /**
    * Process a single JavaScript file
    */
   processFile(filePath) {
@@ -170,10 +331,14 @@ class LineDebugger {
         console.log(`🔄 Removing existing debug statements from ${filePath}`);
       }
       
+      // Analyze the code context to determine safe insertion points
+      const contextInfo = this.analyzeCodeContext(lines);
+      
       const processedLines = lines.map((line, index) => {
         const lineNumber = index + 1;
         const isEmptyLine = line.trim() === '';
-        return this.processLine(line, lineNumber, fileName, isEmptyLine);
+        const context = contextInfo[index];
+        return this.processLine(line, lineNumber, fileName, isEmptyLine, context);
       });
 
       const processedContent = processedLines.join('\n');
